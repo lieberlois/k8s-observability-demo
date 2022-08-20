@@ -1,0 +1,23 @@
+config: 
+
+  opensearch_dashboards.yml:
+
+    # Enables you to specify a path to mount OpenSearch Dashboards at if you are running behind a proxy.
+    # Use the `server.rewriteBasePath` setting to tell OpenSearch Dashboards if it should remove the basePath
+    # from requests it receives, and to prevent a deprecation warning at startup.
+    # This setting cannot end in a slash.
+    server.basePath: /opensearch
+
+    # Specifies whether OpenSearch Dashboards should rewrite requests that are prefixed with
+    # `server.basePath` or require that they are rewritten by your reverse proxy.
+    server.rewriteBasePath: true
+
+    opensearch.hosts: https://opensearch-cluster-master.logging.svc.cluster.local:9200
+    opensearch.ssl.verificationMode: none
+    server.ssl.enabled: false
+    opensearch.username: "admin"
+    opensearch.password: "admin"
+
+    # Use this setting if you are running OpenSearch Dashboards without https
+    opensearch_security.cookie.secure: false
+    logging.verbose: true

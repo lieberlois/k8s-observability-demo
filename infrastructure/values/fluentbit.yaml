@@ -1,0 +1,7 @@
+existingConfigMap: fluentbit-config
+
+serviceMonitor:
+  enabled: false
+
+prometheusRule:
+  enabled: false
