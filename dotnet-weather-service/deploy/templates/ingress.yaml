@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ required "" .Values.namespace }}
+spec:
+  rules:
+  - http:
+      paths:
+      - path: {{ required "" .Values.ingress.path }}
+        pathType: Exact  # Traefik doesn't allow for path rewrites, this works for now but is a terrible solution!
+        backend:
+          service:
+            name: {{ .Release.Name }}
+            port:
+              number: {{ .Values.service.port }}

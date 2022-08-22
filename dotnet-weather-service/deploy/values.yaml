@@ -1,0 +1,18 @@
+replicaCount: 1
+
+namespace: weather
+
+image: dotnet-weather-service
+
+service:
+  type: ClusterIP
+  port: 80
+
+healthcheck:
+  path: /health
+
+prometheus:
+  path: /metrics
+
+ingress:
+  path: /forecast

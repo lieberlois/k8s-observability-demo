@@ -8,10 +8,14 @@ data:
   custom_parsers.conf: |
     [PARSER]
         Name docker_no_time
-        Format json
+        Format regex
+        Regex ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
         Time_Keep Off
         Time_Key time
         Time_Format %Y-%m-%dT%H:%M:%S.%L
+    [PARSER]
+        Name        log_parse
+        Format      json
   fluent-bit.conf: |
     [SERVICE]
         Flush 1
@@ -25,7 +29,7 @@ data:
     [INPUT]
         Name tail
         Path /var/log/containers/*.log
-        Parser docker
+        Parser docker_no_time
         Tag kube.*
         Mem_Buf_Limit 5MB
         Skip_Long_Lines On
@@ -41,6 +45,12 @@ data:
         Keep_Log Off
         K8S-Logging.Parser On
         K8S-Logging.Exclude On
+    [FILTER]
+        Name parser
+        Match *
+        Key_Name          log
+        Parser            log_parse
+        Reserve_Data      True
     [OUTPUT]
         Name            es
         Match           *
