@@ -31,7 +31,7 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo update
 
 # Deploy kube-prometheus-stack and ELK Stack
-helm upgrade --install --namespace monitoring prometheus-stack prometheus-community/kube-prometheus-stack --values ./values/prometheus-stack.yaml
+helm upgrade --install --namespace monitoring prometheus-stack prometheus-community/kube-prometheus-stack --values ./values/prometheus-stack.yaml --wait
 
 # Prepare own applications
 prepare_own_image dotnet-weather-service
