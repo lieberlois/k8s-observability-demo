@@ -1,14 +1,192 @@
+---
 prometheus:
   prometheusSpec:
-    # This configuration enables prometheus to monitor other namespaces
-    serviceMonitorSelectorNilUsesHelmValues: false
-    serviceMonitorSelector: {}
-    serviceMonitorNamespaceSelector: {}
+    # https://github.com/linkerd/linkerd2/issues/7978
+    scrapeInterval: "10s"
+    additionalScrapeConfigs:
+    - job_name: 'linkerd-controller'
+      kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+          # - '{{.Values.linkerdNamespace}}'
+          # - '{{.Values.namespace}}'
+          - 'linkerd'
+          - 'monitoring'
+      relabel_configs:
+      - source_labels:
+        - __meta_kubernetes_pod_container_port_name
+        action: keep
+        regex: admin-http
+      - source_labels: [__meta_kubernetes_pod_container_name]
+        action: replace
+        target_label: component
+
+    - job_name: 'linkerd-service-mirror'
+      kubernetes_sd_configs:
+      - role: pod
+      relabel_configs:
+      - source_labels:
+        - __meta_kubernetes_pod_label_linkerd_io_control_plane_component
+        - __meta_kubernetes_pod_container_port_name
+        action: keep
+        regex: linkerd-service-mirror;admin-http$
+      - source_labels: [__meta_kubernetes_pod_container_name]
+        action: replace
+        target_label: component
+
+    - job_name: 'linkerd-proxy'
+      kubernetes_sd_configs:
+      - role: pod
+      relabel_configs:
+      - source_labels:
+        - __meta_kubernetes_pod_container_name
+        - __meta_kubernetes_pod_container_port_name
+        - __meta_kubernetes_pod_label_linkerd_io_control_plane_ns
+        action: keep
+        # regex: ^{{default .Values.proxyContainerName "linkerd-proxy" .Values.proxyContainerName}};linkerd-admin;{{.Values.linkerdNamespace}}$
+        regex: ^linkerd-proxy;linkerd-admin;linkerd$
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: pod
+      # special case k8s' "job" label, to not interfere with prometheus' "job"
+      # label
+      # __meta_kubernetes_pod_label_linkerd_io_proxy_job=foo =>
+      # k8s_job=foo
+      - source_labels: [__meta_kubernetes_pod_label_linkerd_io_proxy_job]
+        action: replace
+        target_label: k8s_job
+      # drop __meta_kubernetes_pod_label_linkerd_io_proxy_job
+      - action: labeldrop
+        regex: __meta_kubernetes_pod_label_linkerd_io_proxy_job
+      # __meta_kubernetes_pod_label_linkerd_io_proxy_deployment=foo =>
+      # deployment=foo
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_linkerd_io_proxy_(.+)
+      # drop all labels that we just made copies of in the previous labelmap
+      - action: labeldrop
+        regex: __meta_kubernetes_pod_label_linkerd_io_proxy_(.+)
+      # __meta_kubernetes_pod_label_linkerd_io_foo=bar =>
+      # foo=bar
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_linkerd_io_(.+)
+      # Copy all pod labels to tmp labels
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+        replacement: __tmp_pod_label_$1
+      # Take `linkerd_io_` prefixed labels and copy them without the prefix
+      - action: labelmap
+        regex: __tmp_pod_label_linkerd_io_(.+)
+        replacement:  __tmp_pod_label_$1
+      # Drop the `linkerd_io_` originals
+      - action: labeldrop
+        regex: __tmp_pod_label_linkerd_io_(.+)
+      # Copy tmp labels into real labels
+      - action: labelmap
+        regex: __tmp_pod_label_(.+)
+
+prometheusOperator:
+  admissionWebhooks:
+    enabled: false
+  tls:
+    enabled: false
 
 grafana:
   enabled: true
   adminPassword: admin
   grafana.ini:
     server:
-      root_url: http://localhost/grafana
+      root_url: http://localhost:8080/grafana
       serve_from_sub_path: true
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: default
+          orgId: 1
+          folder: ""
+          type: file
+          disableDeletion: false
+          editable: false
+          options:
+            path: /var/lib/grafana/dashboards/default
+
+  dashboards:
+    default:
+      # all these charts are hosted at https://grafana.com/grafana/dashboards/{id}
+      top-line:
+        gnetId: 15474
+        revision: 3
+        datasource: Prometheus
+      health:
+        gnetId: 15486
+        revision: 2
+        datasource: Prometheus
+      kubernetes:
+        gnetId: 15479
+        revision: 2
+        datasource: Prometheus
+      namespace:
+        gnetId: 15478
+        revision: 2
+        datasource: Prometheus
+      deployment:
+        gnetId: 15475
+        revision: 5
+        datasource: Prometheus
+      pod:
+        gnetId: 15477
+        revision: 2
+        datasource: Prometheus
+      service:
+        gnetId: 15480
+        revision: 2
+        datasource: Prometheus
+      route:
+        gnetId: 15481
+        revision: 2
+        datasource: Prometheus
+      authority:
+        gnetId: 15482
+        revision: 2
+        datasource: Prometheus
+      cronjob:
+        gnetId: 15483
+        revision: 2
+        datasource: Prometheus
+      job:
+        gnetId: 15487
+        revision: 2
+        datasource: Prometheus
+      daemonset:
+        gnetId: 15484
+        revision: 2
+        datasource: Prometheus
+      replicaset:
+        gnetId: 15491
+        revision: 2
+        datasource: Prometheus
+      statefulset:
+        gnetId: 15493
+        revision: 2
+        datasource: Prometheus
+      replicationcontroller:
+        gnetId: 15492
+        revision: 2
+        datasource: Prometheus
+      prometheus:
+        gnetId: 15489
+        revision: 2
+        datasource: Prometheus
+      prometheus-benchmark:
+        gnetId: 15490
+        revision: 2
+        datasource: Prometheus
+      multicluster:
+        gnetId: 15488
+        revision: 2
+        datasource: Prometheus

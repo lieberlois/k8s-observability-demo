@@ -16,3 +16,11 @@ prometheus:
 
 ingress:
   path: /forecast
+
+resources:
+  requests:
+    memory: 50Mi
+    cpu: 10m
+  limits:
+    memory: 100Mi
+    cpu: 50m

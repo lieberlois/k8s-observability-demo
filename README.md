@@ -24,6 +24,10 @@ Several sources input data into the Prometheus instance. **Exporters** are respo
 | Prometheus            | Monitoring system & time series database for metric data        	|
 | Grafana               | Responsible for visualization and alerting based on Prometheus data  |
 
+## Linkerd Service Mesh
+
+In this project Linkerd is being used as a service mesh. Apart from facts like automatic mTLS communication, load balancing, internal communication policies and way more features linkerd exposes useful metrics that Prometheus is configured to scrape. This data is then visualized in the official linkerd dashboards for Grafana. This allows for observability of metrics like success rates, latency information and so on. To access the linkerd dashboard, use the command `kubectl port-forward -n linkerd service/web 8084:8084`.
+
 ## Setup
 
 In order to set this demonstration up, a K3D cluster is being used. K3D is a tool that allows for easy creation of Kubernetes clusters by deploying a K3S-cluster within docker containers. All applications used in this repository (own implementations and third-party applications) are installed using `Helm Charts`. Two utility scripts contain all of the work necessary to setup the cluster and all deployments.
@@ -42,7 +46,8 @@ After all applications are deployed, you can access the applications as shown in
 
 | Application          	| Endpoint          	| Description            	|
 |-----------------------|-----------------------|-----------------------	|
-| dotnet-weather-service | http://localhost/forecast     | Default weather forecast ASP.NET Core application (Prometheus metrics, Serilog structured logging)  |
+| dotnet-weather-service | http://localhost:8080/forecast     | Default weather forecast ASP.NET Core application (Prometheus metrics, Serilog structured logging)  |
 | Prometheus            | No public endpoint    | Prometheus UI, useful for viewing data sources and service monitors |
-| Grafana               | http://localhost/grafana | Grafana dashboard used for data visualization (Credentials admin:admin)  |
-| OpenSearch               | http://localhost/opensearch | OpenSearch dashboard used for log analysis (Credentials admin:admin)  |
+| Grafana               | http://localhost:8080/grafana | Grafana dashboard used for data visualization (Credentials admin:admin)  |
+| OpenSearch            | http://localhost:8080/opensearch | OpenSearch dashboard used for log analysis (Credentials admin:admin)  |
+| Linkerd Viz           | No public endpoint | Linkerd Viz dashboard for linkerd specific data (meshed pods, k8s architecture, etc.)  |

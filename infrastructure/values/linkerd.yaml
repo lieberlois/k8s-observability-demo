@@ -1,0 +1,7 @@
+identity:
+  issuer:
+    scheme: kubernetes.io/tls
+    
+  externalCA: true
+
+installNamespace: false

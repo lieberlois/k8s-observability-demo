@@ -1,0 +1,8 @@
+prometheusUrl: "http://prometheus-operated.monitoring.svc.cluster.local:9090"
+
+prometheus:
+  # No separate installation
+  enabled: false
+
+grafana:
+  externalUrl: http://localhost:8080/grafana
