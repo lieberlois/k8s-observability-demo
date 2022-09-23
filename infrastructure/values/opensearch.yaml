@@ -1,0 +1,25 @@
+replicas: 1
+
+resources:
+  requests:
+    cpu: "1000m"
+    memory: "200Mi"
+  limits:
+    cpu: "2000m"
+    memory: "1000Mi"
+
+initResources: 
+ limits:
+    cpu: "100m"
+    memory: "256Mi"
+ requests:
+    cpu: "100m"
+    memory: "256Mi"
+
+sidecarResources:
+  limits:
+    cpu: "50m"
+    memory: "256Mi"
+  requests:
+    cpu: "50m"
+    memory: "256Mi"

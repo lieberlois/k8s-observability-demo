@@ -73,7 +73,7 @@ helm upgrade --install linkerd-viz linkerd/linkerd-viz \
 
 # Deploy Logging Stack
 helm upgrade --install --namespace logging fluent-bit fluent/fluent-bit --values ./values/fluentbit.yaml --wait
-helm upgrade --install --namespace logging opensearch opensearch/opensearch --set replicas=1 --version 1.14.0 --wait 
+helm upgrade --install --namespace logging opensearch opensearch/opensearch --values ./values/opensearch.yaml --version 1.14.0 --wait 
 helm upgrade --install --namespace logging opensearch-dashboard opensearch/opensearch-dashboards --version 1.8.1 --values ./values/opensearch-dashboard.yaml --wait
 
 # Prepare own applications
